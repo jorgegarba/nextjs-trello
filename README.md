@@ -9,4 +9,4 @@ MongoDB URL Local:
 
 ```
 mongodb://localhost:27017/entriesdb
-```w
+```
