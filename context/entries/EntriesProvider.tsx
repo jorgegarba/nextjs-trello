@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren, useReducer } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Entry } from '../../interfaces/entry';
+import { Entry, EntryStatus } from '../../interfaces/entry';
 import { EntriesContext } from './EntriesContext';
 import { entriesReducer } from './entriesReducer';
 
@@ -45,8 +45,14 @@ const EntriesProvider: FC<PropsWithChildren> = ({ children }) => {
 		dispatch({ type: '[Entries] - Add', payload: newEntry });
 	};
 
+	const updateEntry = (entry: Entry) => {
+		dispatch({ type: '[Entries] - Update', payload: entry });
+	};
+
 	return (
-		<EntriesContext.Provider value={{ entries: state.entries, addNewEntry }}>
+		<EntriesContext.Provider
+			value={{ entries: state.entries, addNewEntry, updateEntry }}
+		>
 			{children}
 		</EntriesContext.Provider>
 	);
