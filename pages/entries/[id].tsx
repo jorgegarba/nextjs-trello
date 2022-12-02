@@ -15,36 +15,64 @@ import {
 	TextField
 } from '@mui/material';
 import React from 'react';
+import { GetServerSideProps } from 'next';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 
 import Layout from '../../components/layouts/Layout';
 import { EntryStatus } from '../../interfaces/entry';
+import { useState, useMemo } from 'react';
+
+interface Props {
+	id: string;
+}
 
 const validStatus: EntryStatus[] = ['finished', 'in-progress', 'pending'];
 
-const EntryPage = () => {
+const EntryPage: React.FC<Props> = (props) => {
+	console.log(props.id);
+
+	const [inputValue, setInputValue] = useState('');
+	const [status, setStatus] = useState<EntryStatus>('pending');
+	const [touched, setTouched] = useState(false);
+
+	const onSave = () => {};
+
+	const showError = useMemo(
+		() => touched && inputValue.trim().length === 0,
+		[touched, inputValue]
+	);
+
 	return (
 		<Layout title="">
 			<Grid container justifyContent="center" sx={{ marginTop: 2 }}>
 				<Grid item xs={12} sm={8} md={6}>
 					<Card>
 						<CardHeader
-							title="Entrada:"
+							title={`Entrada: ${inputValue}`}
 							subheader="Cread a hacer ... minutos"
 						/>
 						<CardContent>
 							<TextField
+								onChange={(e) => setInputValue(e.target.value)}
+								value={inputValue}
 								sx={{ marginTop: 2, marginBottom: 1 }}
 								fullWidth
 								placeholder="Nueva entrada"
 								autoFocus
 								multiline
 								label="Nueva entrada"
+								helperText={showError && 'Ingrese un valor'}
+								error={showError}
+								onBlur={() => setTouched(true)}
 							/>
 							<FormControl>
 								<FormLabel>Estado:</FormLabel>
-								<RadioGroup row>
+								<RadioGroup
+									row
+									value={status}
+									onChange={(e) => setStatus(e.target.value as EntryStatus)}
+								>
 									{validStatus.map((option) => (
 										<FormControlLabel
 											key={option}
@@ -61,6 +89,8 @@ const EntryPage = () => {
 								startIcon={<SaveOutlinedIcon />}
 								variant="contained"
 								fullWidth
+								onClick={onSave}
+								disabled={showError || inputValue.trim().length === 0}
 							>
 								Save
 							</Button>
@@ -80,6 +110,19 @@ const EntryPage = () => {
 			</IconButton>
 		</Layout>
 	);
+};
+
+// You should use getServerSideProps when:
+// - Only if you need to pre-render a page whose data must be fetched at request time
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+	const { id } = ctx.params as { id: string };
+
+	return {
+		props: {
+			id
+		}
+	};
 };
 
 export default EntryPage;
