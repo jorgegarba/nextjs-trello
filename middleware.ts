@@ -10,6 +10,10 @@ export function middleware(request: NextRequest) {
 		const id = request.nextUrl.pathname.replace('/api/entries/', '');
 		const checkMongoIDRegEx = new RegExp('^[0-9a-fA-F]{24}$');
 		if (!checkMongoIDRegEx.test(id)) {
+			const url = request.nextUrl.clone();
+			url.pathname = '/api/bad-request';
+			url.search = '?message=bad%20request%20my%20friend';
+			return NextResponse.rewrite(url);
 		}
 	}
 
