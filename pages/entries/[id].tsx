@@ -21,22 +21,31 @@ import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined
 
 import Layout from '../../components/layouts/Layout';
 import { EntryStatus } from '../../interfaces/entry';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useContext } from 'react';
+import { getEntryById } from '../../db/dbEntries';
+import { IEntry } from '../../models/EntryModel';
+import { EntriesContext } from '../../context/entries/EntriesContext';
 
 interface Props {
-	id: string;
+	entry: IEntry;
 }
 
 const validStatus: EntryStatus[] = ['finished', 'in-progress', 'pending'];
 
 const EntryPage: React.FC<Props> = (props) => {
-	console.log(props.id);
-
-	const [inputValue, setInputValue] = useState('');
-	const [status, setStatus] = useState<EntryStatus>('pending');
+	const { entry } = props;
+	const [inputValue, setInputValue] = useState(entry.description);
+	const [status, setStatus] = useState<EntryStatus>(entry.status);
 	const [touched, setTouched] = useState(false);
+	const { updateEntry } = useContext(EntriesContext);
 
-	const onSave = () => {};
+	const onSave = () => {
+		updateEntry({
+			...entry,
+			description: inputValue,
+			status
+		});
+	};
 
 	const showError = useMemo(
 		() => touched && inputValue.trim().length === 0,
@@ -44,12 +53,12 @@ const EntryPage: React.FC<Props> = (props) => {
 	);
 
 	return (
-		<Layout title="">
+		<Layout title={inputValue.substring(0, 20) + '...'}>
 			<Grid container justifyContent="center" sx={{ marginTop: 2 }}>
 				<Grid item xs={12} sm={8} md={6}>
 					<Card>
 						<CardHeader
-							title={`Entrada: ${inputValue}`}
+							title={`Entrada:`}
 							subheader="Cread a hacer ... minutos"
 						/>
 						<CardContent>
@@ -117,10 +126,18 @@ const EntryPage: React.FC<Props> = (props) => {
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
 	const { id } = ctx.params as { id: string };
-
+	const entry = await getEntryById(id);
+	if (!entry) {
+		return {
+			redirect: {
+				destination: '/',
+				permanent: false
+			}
+		};
+	}
 	return {
 		props: {
-			id
+			entry
 		}
 	};
 };
